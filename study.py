@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 # jam-ai-ranks: do itch.io jam entries that disclose generative AI rank differently?
 # By MV2 of Munim, Inc., made with AI agents. Apache-2.0.
-"""Read each jam's public results pages, then each ranked entry's game page, and
-sort the entry by the page's own Generative AI disclosure (itch.io, since
-November 2024): "yes" (an AI Disclosure row: AI Assisted, plus Code / Graphics /
-Sounds / Text), "no" ("No generative AI was used") or "unanswered" (neither).
-Then compare where each group ranks inside its own jam.
+"""Read each jam's public results pages, then a sample of the ranked entries' game
+pages, and sort each entry by the page's own Generative AI disclosure (itch.io,
+since November 2024): "yes" (an AI Disclosure row: AI Assisted, plus Code /
+Graphics / Sounds / Text), "no" ("No generative AI was used") or "unanswered"
+(neither). Then compare where each group ranks inside its own jam.
+
+Every results page of a jam is read, so each entry's place is measured against
+the whole jam. Game pages are read for an evenly spaced sample of the ranking
+(--games-per-jam, 0 = all), one jam after another in turn, so a deadline cuts
+every jam's sample short evenly instead of dropping the last jams.
 
 One request at a time, at least --delay seconds apart, public pages only. No
 names, usernames or game addresses are written to the public outputs.
 
-    python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 300
+    python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 290 --games-per-jam 100
 """
 
 import argparse
@@ -26,8 +31,8 @@ import time
 import urllib.error
 import urllib.request
 
-VERSION = "0.1.0"
-UA = ("MV2-jam-study/%s (Munim, Inc.; munimversion2@gmail.com; "
+VERSION = "0.2.0"
+UA = ("MV2-jam-study/%s (Munim, Inc.; mv2@munimtech.com; "
       "public pages only, one request at a time)" % VERSION)
 
 ANCHOR = re.compile(r'<a\b[^>]*?\bhref\s*=\s*(["\'])(.*?)\1[^>]*>', re.I | re.S)
@@ -39,7 +44,8 @@ RANKED = re.compile(r'Ranked\s+(\d+)\s*(?:st|nd|rd|th)\s+with\s+([\d,]+)\s+ratin
                     r'\s*\(\s*Score:\s*(\d+(?:\.\d+)?)\s*\)', re.I)
 GAME = re.compile(r'^https?://([a-z0-9_-]+)\.itch\.io/([A-Za-z0-9_-]+)/?$', re.I)
 CRIT = re.compile(r'^(?:\[\[[^\]]*\]\]\s*)?(.+?)\s+#\s*(\d+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)$')
-PAGES = re.compile(r'Page\s+\d+\s+of\s+(\d+)', re.I)
+# itch writes "Page 1 of <a href="?page=24">24</a>": after flatten() the link sits before the number
+PAGES = re.compile(r'Page\s+\d+\s+of\s+(?:\[\[[^\]]*\]\]\s*)?(\d+)', re.I)
 BROWSE = re.compile(r'^(?:https?://itch\.io)?/games/([a-z0-9-]+)/?$', re.I)
 
 AI_PART = {
@@ -132,11 +138,22 @@ def classify(page):
     return cls, parts, engines, web
 
 
+def sample_indices(n, k):
+    """k places spread evenly over a ranking of n (first and last included); k <= 0 or k >= n: all."""
+    if k <= 0 or k >= n:
+        return list(range(n))
+    if k == 1:
+        return [n // 2]
+    return sorted({round(i * (n - 1) / (k - 1)) for i in range(k)})
+
+
 class Fetcher:
-    """GET with a fixed gap between requests; backs off and slows down on 429 and 5xx."""
+    """GET with a fixed gap between requests; backs off and slows down on 429 and 5xx,
+    and speeds back up (never below the starting gap) after 20 answers in a row."""
 
     def __init__(self, delay=1.0, log=print):
-        self.delay, self.log, self.last, self.count = delay, log, 0.0, 0
+        self.base = self.delay = delay
+        self.log, self.last, self.count, self.ok = log, 0.0, 0, 0
 
     def __call__(self, url):
         for attempt in range(4):
@@ -148,9 +165,13 @@ class Fetcher:
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html"})
             try:
                 with urllib.request.urlopen(req, timeout=30) as r:
+                    self.ok += 1
+                    if self.ok >= 20 and self.delay > self.base:
+                        self.delay, self.ok = max(self.base, self.delay / 2), 0
                     return r.status, r.read().decode("utf-8", "replace")
             except urllib.error.HTTPError as e:
                 if e.code in (429, 500, 502, 503, 504) and attempt < 3:
+                    self.ok = 0
                     if e.code == 429:
                         self.delay = min(self.delay * 2, 10.0)
                     after = e.headers.get("Retry-After", "") if e.headers else ""
@@ -168,12 +189,16 @@ class Fetcher:
         return 0, ""
 
 
-def collect(jams, fetch, deadline, log=print, samples=None, max_pages=200):
-    """All ranked entries of every jam, each with its game page's disclosure."""
-    rows = []
+def collect(jams, fetch, deadline, log=print, samples=None, max_pages=200, games_per_jam=0, notes=None):
+    """Every ranked entry of every jam (all results pages), with a sample of game pages read
+    for their disclosure. A jam whose results pages could not all be read is left out, since
+    places inside a partial ranking would be wrong; `notes` gets what was read for each jam."""
+    notes = {} if notes is None else notes
+    per_jam = []
     for jam in jams:
         slug = jam["slug"]
         entries, seen, page_no, total = [], set(), 1, 1
+        complete = False
         while page_no <= min(total, max_pages) and time.monotonic() < deadline:
             status, page = fetch(results_url(slug, page_no))
             if status != 200:
@@ -192,12 +217,32 @@ def collect(jams, fetch, deadline, log=print, samples=None, max_pages=200):
                 if key not in seen:
                     seen.add(key)
                     entries.append(e)
+            if page_no == total:
+                complete = True
             page_no += 1
-        log("%s: %d ranked entries from %d of %d results pages, %d without a game link"
-            % (slug, len(entries), page_no - 1, total, sum(1 for e in entries if not e["game"])))
-        for n, e in enumerate(entries):
+        complete = complete and total <= max_pages
+        log("%s: %d ranked entries from %d of %d results pages, %d without a game link%s"
+            % (slug, len(entries), page_no - 1, total, sum(1 for e in entries if not e["game"]),
+               "" if complete else " (incomplete: left out)"))
+        notes[slug] = {"results_pages": total, "pages_read": page_no - 1, "ranked": len(entries),
+                       "complete": complete, "sampled": 0}
+        if not complete:
+            continue
+        for e in entries:
             e.update({"jam": slug, "policy": jam["policy"], "group": jam["group"],
-                      "ai_class": "", "ai_parts": [], "engines": [], "web": "", "page_status": ""})
+                      "ai_class": "", "ai_parts": [], "engines": [], "web": "", "page_status": "not_sampled"})
+        add_percentiles(entries)
+        pick = sample_indices(len(entries), games_per_jam)
+        notes[slug]["sampled"] = len(pick)
+        per_jam.append((jam, entries, pick))
+
+    # game pages: one from each jam in turn
+    saved = 0
+    for i in range(max((len(p) for _, _, p in per_jam), default=0)):
+        for jam, entries, pick in per_jam:
+            if i >= len(pick):
+                continue
+            e = entries[pick[i]]
             if not e["game"]:
                 e["page_status"] = "no_link"
             elif time.monotonic() >= deadline:
@@ -207,11 +252,13 @@ def collect(jams, fetch, deadline, log=print, samples=None, max_pages=200):
                 e["page_status"] = str(status)
                 if status == 200:
                     e["ai_class"], e["ai_parts"], e["engines"], e["web"] = classify(page)
-                    if samples and n < 2 and jam is jams[0]:
-                        save(os.path.join(samples, "game-%s-%d.html" % (slug, n)), page)
-            if n % 100 == 99:
-                log("  %s: %d of %d game pages" % (slug, n + 1, len(entries)))
-        add_percentiles(entries)
+                    if samples and saved < 2:
+                        save(os.path.join(samples, "game-%s-%d.html" % (jam["slug"], saved)), page)
+                        saved += 1
+        if i % 25 == 24:
+            log("  game pages: %d rounds of %d" % (i + 1, max(len(p) for _, _, p in per_jam)))
+    rows = []
+    for _, entries, _ in per_jam:
         rows.extend(entries)
     return rows
 
@@ -304,7 +351,7 @@ def analyse(rows, iters=5000):
         js = [r for r in rows if r["jam"] == slug]
         fs = [r for r in js if r["ai_class"]]
         row = {"jam": slug, "policy": js[0]["policy"], "group": js[0]["group"], "ranked": len(js),
-               "classified": len(fs)}
+               "sampled": sum(1 for r in js if r["page_status"] != "not_sampled"), "classified": len(fs)}
         for c in ("yes", "no", "unanswered", "both"):
             cs = [r for r in fs if r["ai_class"] == c]
             row[c] = len(cs)
@@ -371,17 +418,21 @@ def fmt(v):
 def report(s):
     lines = ["# Generative AI disclosure and jam rank (jam-ai-ranks %s)" % s["version"], "",
              "%d ranked entries, %d game pages classified." % (s["entries"], s["classified"]), "",
-             "| jam | policy | ranked | classified | yes | no | unanswered | yes share | mean pct (yes / no / unanswered) |",
-             "|---|---|---|---|---|---|---|---|---|"]
+             "| jam | policy | ranked | sampled | classified | yes | no | unanswered | yes share | mean pct (yes / no / unanswered) |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for j in s["jams"]:
-        lines.append("| %s | %s | %d | %d | %d | %d | %d | %s | %s / %s / %s |" % (
-            j["jam"], j["policy"], j["ranked"], j["classified"], j["yes"], j["no"], j["unanswered"],
-            j["yes_share"], j["mean_pct_raw_yes"], j["mean_pct_raw_no"], j["mean_pct_raw_unanswered"]))
+        lines.append("| %s | %s | %d | %d | %d | %d | %d | %d | %s | %s / %s / %s |" % (
+            j["jam"], j["policy"], j["ranked"], j["sampled"], j["classified"], j["yes"], j["no"],
+            j["unanswered"], j["yes_share"], j["mean_pct_raw_yes"], j["mean_pct_raw_no"],
+            j["mean_pct_raw_unanswered"]))
+    if s.get("jams_read"):
+        lines += ["", "## Results pages read", "", "```", json.dumps(s["jams_read"], indent=1), "```"]
     for name, g in s["groups"].items():
         lines += ["", "## %s" % name, "", "```", json.dumps(g, indent=1), "```"]
-    lines += ["", "pct = place inside the entry's own jam, 1 = best, 0 = worst; raw = raw overall score,",
-              "rank = itch's ratings-adjusted rank. diff = mean pct of the first classes minus the second,",
-              "pooled over jams that have both; p from shuffling labels inside each jam.", ""]
+    lines += ["", "pct = place inside the entry's own whole jam, 1 = best, 0 = worst; raw = raw overall score,",
+              "rank = itch's ratings-adjusted rank. Game pages were read for an evenly spaced sample of each",
+              "ranking. diff = mean pct of the first classes minus the second, pooled over jams that have both;",
+              "p from shuffling labels inside each jam.", ""]
     return "\n".join(lines)
 
 
@@ -391,6 +442,7 @@ def main(argv=None):
     ap.add_argument("--out", default="out")
     ap.add_argument("--delay", type=float, default=1.0)
     ap.add_argument("--deadline-minutes", type=float, default=300)
+    ap.add_argument("--games-per-jam", type=int, default=0)
     ap.add_argument("--iters", type=int, default=5000)
     a = ap.parse_args(argv)
     with open(a.jams, newline="", encoding="utf-8") as f:
@@ -401,8 +453,12 @@ def main(argv=None):
         print("[%6.0f s] %s" % (time.monotonic() - start, msg), flush=True)
 
     fetch = Fetcher(a.delay, log)
-    rows = collect(jams, fetch, start + a.deadline_minutes * 60, log, os.path.join(a.out, "samples"))
+    notes = {}
+    rows = collect(jams, fetch, start + a.deadline_minutes * 60, log, os.path.join(a.out, "samples"),
+                   games_per_jam=a.games_per_jam, notes=notes)
     summary = analyse(rows, a.iters)
+    summary["jams_read"] = notes
+    summary["games_per_jam"] = a.games_per_jam
     summary["requests"] = fetch.count
     summary["read_at_utc"] = time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime())
     write_outputs(rows, summary, a.out)

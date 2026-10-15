@@ -31,9 +31,13 @@ def entry(user, game, title, place, rank, ratings, score, raw, rid, grank, graw)
 
 
 def results_page(entries, page_no, pages):
+    # the pager as itch.io writes it (read 2026-10-15): the page total is a link
+    pager = ('<div class="pager"><a class="next_page button" href="?page=%d">Next</a>'
+             '<span class="pager_label">Page %d of <a href="?page=%d">%d</a></span></div>'
+             % (page_no + 1, page_no, pages, pages))
     return ("<html><head><script>var x = '<a href=\"https://evil.itch.io/script-game\">';</script></head>"
-            "<body><h1>Results</h1><a href=\"https://host.itch.io\">host</a>"
-            "<div class=\"pager\">Page %d of %d</div>%s</body></html>" % (page_no, pages, "".join(entries)))
+            "<body><h1>Results</h1><a href=\"https://host.itch.io\">host</a>%s%s</body></html>"
+            % (pager, "".join(entries)))
 
 
 PAGE1 = results_page([
@@ -55,6 +59,22 @@ UNANSWERED = """<table><tr><td>Tags</td><td><a href="https://itch.io/games/tag-h
 <tr><td>Made with</td><td><a href="https://itch.io/games/made-with-unity">Unity</a></td></tr></table>"""
 BOTH = YES + NO
 
+SITE = {
+    study.results_url("test-jam", 1): PAGE1,
+    study.results_url("test-jam", 2): PAGE2,
+    "https://alpha.itch.io/rain-game": YES,
+    "https://bravo.itch.io/fog": NO,
+    "https://charlie.itch.io/snow": UNANSWERED,
+}
+JAMS = [{"slug": "test-jam", "policy": "allowed", "group": "ai_not_banned"}]
+
+
+def fake_site(asked):
+    def fetch(url):
+        asked.append(url)
+        return (200, SITE[url]) if url in SITE else (404, "")
+    return fetch
+
 
 class Parse(unittest.TestCase):
     def test_flatten(self):
@@ -75,8 +95,22 @@ class Parse(unittest.TestCase):
         self.assertEqual((b["rank"], b["ratings"], b["score"], b["raw"]), (2, 2, 2.121, 4.2))
         self.assertEqual(b["game"], "https://bravo.itch.io/fog")
         self.assertEqual(b["rate_id"], "222")
+
+    def test_page_count(self):
+        # v0.1.0 read "Page 1 of [[?page=24]] 24" as one page: the bug this version fixes
         self.assertEqual(study.page_count(PAGE1), 2)
+        real = ('<div class="pager"><a class="next_page button" href="?page=2">Next <span class="icon '
+                'icon-arrow-right" aria-hidden="true"></span></a><span class="pager_label">Page 1 of '
+                '<a href="?page=24">24</a></span></div>')
+        self.assertEqual(study.page_count(real), 24)
+        self.assertEqual(study.page_count("<p>Page 3 of 7</p>"), 7)
         self.assertEqual(study.page_count("<p>no pager</p>"), 1)
+
+    def test_hidden_scores_are_not_ranked(self):
+        # Kenney Jam 2025 shows "Ranked 1st" with n/a scores: nothing to place by score
+        hidden = ('<h2><a href="https://a.itch.io/b">B</a></h2><h3>Ranked <strong>1st</strong></h3>'
+                  '<table><tr><td>Best overall</td><td>#1</td><td><em>n/a</em></td><td><em>n/a</em></td></tr></table>')
+        self.assertEqual(study.parse_results(hidden, "kenney-jam-2025"), [])
 
     def test_no_entries(self):
         self.assertEqual(study.parse_results("<p>Results are not ready</p>", "test-jam"), [])
@@ -94,6 +128,17 @@ class Stats(unittest.TestCase):
     def test_mid_percentiles(self):
         self.assertEqual(study.mid_percentiles([3, 1, 2, 2]), [1.0, 0.0, 0.5, 0.5])
         self.assertEqual(study.mid_percentiles([7]), [0.5])
+
+    def test_sample_indices(self):
+        self.assertEqual(study.sample_indices(4, 0), [0, 1, 2, 3])
+        self.assertEqual(study.sample_indices(4, 9), [0, 1, 2, 3])
+        self.assertEqual(study.sample_indices(4, 2), [0, 3])
+        self.assertEqual(study.sample_indices(5, 1), [2])
+        s = study.sample_indices(1000, 100)
+        self.assertEqual(len(s), 100)
+        self.assertEqual((s[0], s[-1]), (0, 999))
+        gaps = {b - a for a, b in zip(s, s[1:])}
+        self.assertLessEqual(max(gaps) - min(gaps), 1)
 
     def test_compare_finds_a_clear_gap(self):
         rows = []
@@ -115,24 +160,14 @@ class Stats(unittest.TestCase):
 
 class EndToEnd(unittest.TestCase):
     def test_collect_analyse_write(self):
-        pages = {
-            study.results_url("test-jam", 1): PAGE1,
-            study.results_url("test-jam", 2): PAGE2,
-            "https://alpha.itch.io/rain-game": YES,
-            "https://bravo.itch.io/fog": NO,
-            "https://charlie.itch.io/snow": UNANSWERED,
-        }
         asked = []
-
-        def fetch(url):
-            asked.append(url)
-            return (200, pages[url]) if url in pages else (404, "")
-
-        jams = [{"slug": "test-jam", "policy": "allowed", "group": "ai_not_banned"}]
+        notes = {}
         with tempfile.TemporaryDirectory() as tmp:
-            rows = study.collect(jams, fetch, time.monotonic() + 60, log=lambda m: None,
-                                 samples=os.path.join(tmp, "samples"))
+            rows = study.collect(JAMS, fake_site(asked), time.monotonic() + 60, log=lambda m: None,
+                                 samples=os.path.join(tmp, "samples"), notes=notes)
             self.assertEqual(len(rows), 4)
+            self.assertEqual(notes["test-jam"], {"results_pages": 2, "pages_read": 2, "ranked": 4,
+                                                 "complete": True, "sampled": 4})
             self.assertEqual([r["ai_class"] for r in rows], ["yes", "no", "unanswered", ""])
             self.assertEqual(rows[3]["page_status"], "404")
             self.assertEqual(asked[0], "https://itch.io/jam/test-jam/results")
@@ -146,7 +181,7 @@ class EndToEnd(unittest.TestCase):
             self.assertEqual(summary["entries"], 4)
             self.assertEqual(summary["classified"], 3)
             j = summary["jams"][0]
-            self.assertEqual((j["yes"], j["no"], j["unanswered"]), (1, 1, 1))
+            self.assertEqual((j["yes"], j["no"], j["unanswered"], j["sampled"]), (1, 1, 1, 4))
             g = summary["groups"]["ai_not_banned"]
             self.assertEqual(g["yes_vs_rest"]["raw"]["n_a"], 1)
             self.assertEqual(g["yes_graphics_vs_rest_on_graphics"]["n_a"], 1)
@@ -159,15 +194,52 @@ class EndToEnd(unittest.TestCase):
             with open(os.path.join(out, "entries_public.csv"), newline="", encoding="utf-8") as f:
                 self.assertEqual(len(list(csv.DictReader(f))), 4)
             self.assertIn("rate_id", open(os.path.join(out, "entries_private.csv"), encoding="utf-8").read())
-            self.assertTrue(os.path.exists(os.path.join(out, "report.md")))
+            self.assertIn("sampled", open(os.path.join(out, "report.md"), encoding="utf-8").read())
             self.assertTrue(os.path.exists(os.path.join(tmp, "samples", "results-test-jam.html")))
+
+    def test_sample_keeps_whole_jam_places(self):
+        asked = []
+        rows = study.collect(JAMS, fake_site(asked), time.monotonic() + 60, log=lambda m: None, games_per_jam=2)
+        self.assertEqual(len(rows), 4)
+        # first and last of the ranking are read; places still come from all four entries
+        self.assertEqual([r["page_status"] for r in rows], ["200", "not_sampled", "not_sampled", "404"])
+        self.assertNotIn("https://bravo.itch.io/fog", asked)
+        self.assertEqual([r["pct_raw"] for r in rows], [2 / 3, 1.0, 1 / 6, 1 / 6])
+        self.assertEqual(study.analyse(rows, iters=20)["jams"][0]["sampled"], 2)
+
+    def test_jams_take_turns(self):
+        site = dict(SITE)
+        for k in (1, 2):
+            site[study.results_url("other-jam", k)] = SITE[study.results_url("test-jam", k)].replace(
+                "/jam/test-jam/", "/jam/other-jam/")
+        asked = []
+
+        def fetch(url):
+            asked.append(url)
+            return (200, site[url]) if url in site else (404, "")
+
+        jams = JAMS + [{"slug": "other-jam", "policy": "banned_all", "group": "ai_banned"}]
+        rows = study.collect(jams, fetch, time.monotonic() + 60, log=lambda m: None)
+        games = [u for u in asked if "/jam/" not in u]
+        # entry 1 of each jam, then entry 2 of each jam, ...
+        self.assertEqual(games[:2], ["https://alpha.itch.io/rain-game", "https://alpha.itch.io/rain-game"])
+        self.assertEqual(len(rows), 8)
+
+    def test_incomplete_results_are_left_out(self):
+        def fetch(url):
+            return (200, PAGE1) if url == study.results_url("test-jam", 1) else (503, "")
+
+        notes = {}
+        rows = study.collect(JAMS, fetch, time.monotonic() + 60, log=lambda m: None, notes=notes)
+        self.assertEqual(rows, [])
+        self.assertFalse(notes["test-jam"]["complete"])
+        self.assertEqual(notes["test-jam"]["pages_read"], 1)
 
     def test_deadline_stops_fetching(self):
         def fetch(url):
             return (200, PAGE1) if "results" in url else (200, YES)
 
-        jams = [{"slug": "test-jam", "policy": "allowed", "group": "g"}]
-        rows = study.collect(jams, fetch, time.monotonic() - 1, log=lambda m: None)
+        rows = study.collect(JAMS, fetch, time.monotonic() - 1, log=lambda m: None)
         self.assertEqual(rows, [])
 
 

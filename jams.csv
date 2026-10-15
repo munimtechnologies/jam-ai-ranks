@@ -2,9 +2,7 @@ slug,name,policy,group,quote
 gamedevjs-2026,Gamedev.js Jam 2026,allowed,ai_not_banned,"Use of AI is totally allowed, and even encouraged, as long as you don't break any copyright laws."
 gamedevjs-2025,Gamedev.js Jam 2025,not_stated,ai_not_banned,
 game-off-2025,Game Off 2025,not_stated,ai_not_banned,
-kenney-jam-2025,Kenney Jam 2025,not_stated,ai_not_banned,
 gdevelop-big-game-jam-9,GDevelop BIG Game Jam #9,not_stated,ai_not_banned,
-pirate17,Pirate Software - Game Jam 17,not_stated,ai_not_banned,
 ai-browser-game-jam,AI Browser Game Jam,required,ai_not_banned,
 scream-jam-2025,SCREAM JAM 2025,banned_most,ai_banned,Most generative AI (GenAI) technologies and generated content are prohibited from use in this jam.
 brackeys-14,Brackeys Game Jam 2025.2,banned_all,ai_banned,No AI-Generated content.
