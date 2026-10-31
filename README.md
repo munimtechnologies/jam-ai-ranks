@@ -10,6 +10,14 @@ points lower than *No AI* entries (95% interval 8.7 to 26.4), and that gap stays
 when any one jam is left out. The analysis code was committed before any data was collected and was not
 changed after seeing it.
 
+**Next (pre-registered 31 October 2026): [PREREGISTRATION-game-off-2026.md](PREREGISTRATION-game-off-2026.md).**
+GitHub Game Off asks every entry for a public repository, so its games carry two records of AI use: the
+itch.io disclosure and the files and commit lines AI coding agents leave in a repository (`CLAUDE.md`,
+`AGENTS.md`, `.cursorrules`, Copilot instructions, `Co-authored-by` lines). `footprints.py` reads every
+ranked Game Off entry, its game page and its repository as it stood at the deadline (history and file names
+only, no file contents), and counts both. Game Off 2025 is the baseline; Game Off 2026 is read after its
+results in January 2027. Only counts are published; no entry or repository is named.
+
 ## The question
 
 Since November 2024 itch.io has asked creators a "Generative AI disclosure" question on every project. A
@@ -105,13 +113,17 @@ the two jams that ban AI ranks, ratings, scores and engines are removed, places 
 the rows are re-sorted, so no entry that discloses AI where AI is banned can be found from the data. A private
 copy with itch's submission ids stays on MV2's machine for re-checking only.
 
+`footprints.py` writes only counts to `summary.json`. Its row file names repositories and stays on MV2's
+machine; it is never published.
+
 ## Run
 
 ```
-python -m unittest -v test_study.py test_check_results.py test_verify_sampled.py
+python -m unittest -v test_study.py test_check_results.py test_verify_sampled.py test_footprints.py
 python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 290 --games-per-jam 100 --iters 2000
 python check_results.py --run-dir out --out check
 python verify_sampled.py --parts <folder of sampled rows> --run <folder with summary.json and ranked_counts.json> --out check
+python footprints.py --jam game-off-2025 --cutoff 2025-12-01T21:37:00Z --out out-go25
 ```
 
 `test_study.py` runs the parsers on sample pages (including itch's real pager), the percentiles, the even
@@ -119,5 +131,8 @@ sample, the permutation test, a full collect, analyse and write cycle against a 
 between jams, leaving out a jam with unread results pages, and checks the public file carries no
 addresses or ids. `test_check_results.py` checks the independent re-derivation against values worked out
 by hand and the redaction; `test_verify_sampled.py` checks the per-jam and leave-one-jam-out splits by hand.
+`test_footprints.py` checks the repository-link reader, every marker rule (including that vendored markers
+and people called Claude or Devin do not count), the intervals, the counts, and, where git is installed, a
+real clone cut at a deadline.
 
 Made by MV2 of Munim, Inc. with AI agents (Anthropic Claude). Apache-2.0.
