@@ -1,0 +1,392 @@
+{
+ "version": "0.2.0",
+ "entries": 5125,
+ "classified": 609,
+ "jams": [
+  {
+   "jam": "gamedevjs-2026",
+   "policy": "allowed",
+   "group": "ai_not_banned",
+   "ranked": 477,
+   "sampled": 100,
+   "classified": 99,
+   "yes": 54,
+   "mean_pct_raw_yes": 0.504,
+   "no": 35,
+   "mean_pct_raw_no": 0.532,
+   "unanswered": 9,
+   "mean_pct_raw_unanswered": 0.374,
+   "both": 1,
+   "mean_pct_raw_both": 0.722,
+   "yes_share": 0.5455
+  },
+  {
+   "jam": "gamedevjs-2025",
+   "policy": "not_stated",
+   "group": "ai_not_banned",
+   "ranked": 406,
+   "sampled": 100,
+   "classified": 95,
+   "yes": 20,
+   "mean_pct_raw_yes": 0.536,
+   "no": 65,
+   "mean_pct_raw_no": 0.534,
+   "unanswered": 10,
+   "mean_pct_raw_unanswered": 0.237,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.2105
+  },
+  {
+   "jam": "game-off-2025",
+   "policy": "not_stated",
+   "group": "ai_not_banned",
+   "ranked": 690,
+   "sampled": 100,
+   "classified": 97,
+   "yes": 22,
+   "mean_pct_raw_yes": 0.476,
+   "no": 70,
+   "mean_pct_raw_no": 0.513,
+   "unanswered": 5,
+   "mean_pct_raw_unanswered": 0.498,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.2268
+  },
+  {
+   "jam": "gdevelop-big-game-jam-9",
+   "policy": "not_stated",
+   "group": "ai_not_banned",
+   "ranked": 387,
+   "sampled": 100,
+   "classified": 97,
+   "yes": 12,
+   "mean_pct_raw_yes": 0.547,
+   "no": 70,
+   "mean_pct_raw_no": 0.519,
+   "unanswered": 15,
+   "mean_pct_raw_unanswered": 0.356,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.1237
+  },
+  {
+   "jam": "ai-browser-game-jam",
+   "policy": "required",
+   "group": "ai_not_banned",
+   "ranked": 25,
+   "sampled": 25,
+   "classified": 25,
+   "yes": 24,
+   "mean_pct_raw_yes": 0.497,
+   "no": 0,
+   "mean_pct_raw_no": null,
+   "unanswered": 1,
+   "mean_pct_raw_unanswered": 0.583,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.96
+  },
+  {
+   "jam": "scream-jam-2025",
+   "policy": "banned_most",
+   "group": "ai_banned",
+   "ranked": 908,
+   "sampled": 100,
+   "classified": 97,
+   "yes": 2,
+   "mean_pct_raw_yes": 0.723,
+   "no": 82,
+   "mean_pct_raw_no": 0.504,
+   "unanswered": 13,
+   "mean_pct_raw_unanswered": 0.476,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.0206
+  },
+  {
+   "jam": "brackeys-14",
+   "policy": "banned_all",
+   "group": "ai_banned",
+   "ranked": 2232,
+   "sampled": 100,
+   "classified": 99,
+   "yes": 4,
+   "mean_pct_raw_yes": 0.396,
+   "no": 85,
+   "mean_pct_raw_no": 0.537,
+   "unanswered": 10,
+   "mean_pct_raw_unanswered": 0.379,
+   "both": 0,
+   "mean_pct_raw_both": null,
+   "yes_share": 0.0404
+  }
+ ],
+ "groups": {
+  "ai_not_banned": {
+   "classified": 413,
+   "yes": 132,
+   "median_ratings_yes": 15.0,
+   "no": 240,
+   "median_ratings_no": 15.5,
+   "unanswered": 40,
+   "median_ratings_unanswered": 13.0,
+   "both": 1,
+   "median_ratings_both": 19,
+   "yes_vs_rest": {
+    "raw": {
+     "n_a": 132,
+     "n_b": 280,
+     "jams": 5,
+     "diff": 0.008,
+     "p": 0.7791,
+     "ci95": [
+      -0.0531,
+      0.0629
+     ]
+    },
+    "rank": {
+     "n_a": 132,
+     "n_b": 280,
+     "jams": 5,
+     "diff": 0.0159,
+     "p": 0.5612,
+     "ci95": [
+      -0.0404,
+      0.0696
+     ]
+    }
+   },
+   "yes_vs_no": {
+    "raw": {
+     "n_a": 108,
+     "n_b": 240,
+     "jams": 4,
+     "diff": -0.0138,
+     "p": 0.6692,
+     "ci95": [
+      -0.0774,
+      0.0503
+     ]
+    },
+    "rank": {
+     "n_a": 108,
+     "n_b": 240,
+     "jams": 4,
+     "diff": -0.0044,
+     "p": 0.8891,
+     "ci95": [
+      -0.0661,
+      0.058
+     ]
+    }
+   },
+   "no_vs_unanswered": {
+    "raw": {
+     "n_a": 240,
+     "n_b": 39,
+     "jams": 4,
+     "diff": 0.1751,
+     "p": 0.001,
+     "ci95": [
+      0.0871,
+      0.2638
+     ]
+    },
+    "rank": {
+     "n_a": 240,
+     "n_b": 39,
+     "jams": 4,
+     "diff": 0.172,
+     "p": 0.0005,
+     "ci95": [
+      0.0838,
+      0.2627
+     ]
+    }
+   },
+   "yes_graphics_vs_rest_on_graphics": {
+    "n_a": 67,
+    "n_b": 280,
+    "jams": 5,
+    "diff": -0.049,
+    "p": 0.1569,
+    "ci95": [
+     -0.1206,
+     0.0224
+    ]
+   },
+   "yes_audio_vs_rest_on_audio": {
+    "n_a": 38,
+    "n_b": 280,
+    "jams": 5,
+    "diff": 0.081,
+    "p": 0.0605,
+    "ci95": [
+     -0.015,
+     0.1726
+    ]
+   }
+  },
+  "ai_banned": {
+   "classified": 196,
+   "yes": 6,
+   "median_ratings_yes": 7.0,
+   "no": 167,
+   "median_ratings_no": 8,
+   "unanswered": 23,
+   "median_ratings_unanswered": 7,
+   "both": 0,
+   "median_ratings_both": null,
+   "yes_vs_rest": {
+    "raw": {
+     "n_a": 6,
+     "n_b": 190,
+     "jams": 2,
+     "diff": -0.0051,
+     "p": 0.9625,
+     "ci95": [
+      -0.125,
+      0.1381
+     ]
+    },
+    "rank": {
+     "n_a": 6,
+     "n_b": 190,
+     "jams": 2,
+     "diff": -0.0413,
+     "p": 0.7506,
+     "ci95": [
+      -0.2026,
+      0.1511
+     ]
+    }
+   },
+   "yes_vs_no": {
+    "raw": {
+     "n_a": 6,
+     "n_b": 167,
+     "jams": 2,
+     "diff": -0.0156,
+     "p": 0.9135,
+     "ci95": [
+      -0.1448,
+      0.127
+     ]
+    },
+    "rank": {
+     "n_a": 6,
+     "n_b": 167,
+     "jams": 2,
+     "diff": -0.0485,
+     "p": 0.7066,
+     "ci95": [
+      -0.2223,
+      0.1425
+     ]
+    }
+   },
+   "no_vs_unanswered": {
+    "raw": {
+     "n_a": 167,
+     "n_b": 23,
+     "jams": 2,
+     "diff": 0.0864,
+     "p": 0.1809,
+     "ci95": [
+      -0.0322,
+      0.1999
+     ]
+    },
+    "rank": {
+     "n_a": 167,
+     "n_b": 23,
+     "jams": 2,
+     "diff": 0.0597,
+     "p": 0.3628,
+     "ci95": [
+      -0.0593,
+      0.1771
+     ]
+    }
+   },
+   "yes_graphics_vs_rest_on_graphics": {
+    "n_a": 2,
+    "n_b": 95,
+    "jams": 1,
+    "diff": 0.0171,
+    "p": 0.9295,
+    "ci95": [
+     -0.0823,
+     0.1154
+    ]
+   },
+   "yes_audio_vs_rest_on_audio": {
+    "n_a": 2,
+    "n_b": 190,
+    "jams": 2,
+    "diff": 0.1594,
+    "p": 0.4423,
+    "ci95": [
+     0.1198,
+     0.1998
+    ]
+   }
+  }
+ },
+ "jams_read": {
+  "gamedevjs-2026": {
+   "results_pages": 24,
+   "pages_read": 24,
+   "ranked": 477,
+   "complete": true,
+   "sampled": 100
+  },
+  "gamedevjs-2025": {
+   "results_pages": 21,
+   "pages_read": 21,
+   "ranked": 406,
+   "complete": true,
+   "sampled": 100
+  },
+  "game-off-2025": {
+   "results_pages": 35,
+   "pages_read": 35,
+   "ranked": 690,
+   "complete": true,
+   "sampled": 100
+  },
+  "gdevelop-big-game-jam-9": {
+   "results_pages": 20,
+   "pages_read": 20,
+   "ranked": 387,
+   "complete": true,
+   "sampled": 100
+  },
+  "ai-browser-game-jam": {
+   "results_pages": 2,
+   "pages_read": 2,
+   "ranked": 25,
+   "complete": true,
+   "sampled": 25
+  },
+  "scream-jam-2025": {
+   "results_pages": 46,
+   "pages_read": 46,
+   "ranked": 908,
+   "complete": true,
+   "sampled": 100
+  },
+  "brackeys-14": {
+   "results_pages": 112,
+   "pages_read": 112,
+   "ranked": 2232,
+   "complete": true,
+   "sampled": 100
+  }
+ },
+ "games_per_jam": 100,
+ "requests": 942,
+ "read_at_utc": "2026-10-16T00:05Z"
+}

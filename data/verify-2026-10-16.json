@@ -1,0 +1,211 @@
+{
+ "ok": true,
+ "mismatches": [],
+ "set_aside_whole_run_checks": [
+  "entries 625 != 5125",
+  "gamedevjs-2026 ranked 100 != 477",
+  "gamedevjs-2025 ranked 100 != 406",
+  "game-off-2025 ranked 100 != 690",
+  "gdevelop-big-game-jam-9 ranked 100 != 387",
+  "scream-jam-2025 ranked 100 != 908",
+  "brackeys-14 ranked 100 != 2232"
+ ],
+ "sampled_rows": 625,
+ "robustness_ai_not_banned": {
+  "yes_vs_rest": {
+   "pooled": {
+    "diff": 0.008,
+    "n_a": 132,
+    "n_b": 280
+   },
+   "per_jam": {
+    "ai-browser-game-jam": {
+     "diff": -0.0868,
+     "n_a": 24,
+     "n_b": 1
+    },
+    "game-off-2025": {
+     "diff": -0.0351,
+     "n_a": 22,
+     "n_b": 75
+    },
+    "gamedevjs-2025": {
+     "diff": 0.0418,
+     "n_a": 20,
+     "n_b": 75
+    },
+    "gamedevjs-2026": {
+     "diff": 0.0043,
+     "n_a": 54,
+     "n_b": 44
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": 0.0571,
+     "n_a": 12,
+     "n_b": 85
+    }
+   },
+   "leave_one_jam_out": {
+    "ai-browser-game-jam": {
+     "diff": 0.0107,
+     "n_a": 108,
+     "n_b": 279
+    },
+    "game-off-2025": {
+     "diff": 0.0188,
+     "n_a": 110,
+     "n_b": 205
+    },
+    "gamedevjs-2025": {
+     "diff": 0.0012,
+     "n_a": 112,
+     "n_b": 205
+    },
+    "gamedevjs-2026": {
+     "diff": 0.0102,
+     "n_a": 78,
+     "n_b": 236
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": 0.0002,
+     "n_a": 120,
+     "n_b": 195
+    }
+   },
+   "leave_one_out_range": [
+    0.0002,
+    0.0188
+   ]
+  },
+  "yes_vs_no": {
+   "pooled": {
+    "diff": -0.0138,
+    "n_a": 108,
+    "n_b": 240
+   },
+   "per_jam": {
+    "ai-browser-game-jam": {
+     "diff": null,
+     "n_a": 0,
+     "n_b": 0
+    },
+    "game-off-2025": {
+     "diff": -0.0361,
+     "n_a": 22,
+     "n_b": 70
+    },
+    "gamedevjs-2025": {
+     "diff": 0.0022,
+     "n_a": 20,
+     "n_b": 65
+    },
+    "gamedevjs-2026": {
+     "diff": -0.0279,
+     "n_a": 54,
+     "n_b": 35
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": 0.0285,
+     "n_a": 12,
+     "n_b": 70
+    }
+   },
+   "leave_one_jam_out": {
+    "ai-browser-game-jam": {
+     "diff": -0.0138,
+     "n_a": 108,
+     "n_b": 240
+    },
+    "game-off-2025": {
+     "diff": -0.0098,
+     "n_a": 86,
+     "n_b": 170
+    },
+    "gamedevjs-2025": {
+     "diff": -0.0158,
+     "n_a": 88,
+     "n_b": 175
+    },
+    "gamedevjs-2026": {
+     "diff": -0.0072,
+     "n_a": 54,
+     "n_b": 205
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": -0.0204,
+     "n_a": 96,
+     "n_b": 170
+    }
+   },
+   "leave_one_out_range": [
+    -0.0204,
+    -0.0072
+   ]
+  },
+  "no_vs_unanswered": {
+   "pooled": {
+    "diff": 0.1751,
+    "n_a": 240,
+    "n_b": 39
+   },
+   "per_jam": {
+    "ai-browser-game-jam": {
+     "diff": null,
+     "n_a": 0,
+     "n_b": 0
+    },
+    "game-off-2025": {
+     "diff": 0.0147,
+     "n_a": 70,
+     "n_b": 5
+    },
+    "gamedevjs-2025": {
+     "diff": 0.2976,
+     "n_a": 65,
+     "n_b": 10
+    },
+    "gamedevjs-2026": {
+     "diff": 0.1576,
+     "n_a": 35,
+     "n_b": 9
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": 0.1625,
+     "n_a": 70,
+     "n_b": 15
+    }
+   },
+   "leave_one_jam_out": {
+    "ai-browser-game-jam": {
+     "diff": 0.1751,
+     "n_a": 240,
+     "n_b": 39
+    },
+    "game-off-2025": {
+     "diff": 0.2015,
+     "n_a": 170,
+     "n_b": 34
+    },
+    "gamedevjs-2025": {
+     "diff": 0.1326,
+     "n_a": 175,
+     "n_b": 29
+    },
+    "gamedevjs-2026": {
+     "diff": 0.1816,
+     "n_a": 205,
+     "n_b": 30
+    },
+    "gdevelop-big-game-jam-9": {
+     "diff": 0.1821,
+     "n_a": 170,
+     "n_b": 24
+    }
+   },
+   "leave_one_out_range": [
+    0.1326,
+    0.2015
+   ]
+  }
+ }
+}

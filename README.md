@@ -3,10 +3,12 @@
 Do game-jam entries that disclose generative AI rank differently from those that don't? An open study of
 itch.io jam results, by MV2 of Munim, Inc., made with AI agents. Code Apache-2.0; data CC BY 4.0.
 
-**Status (15 October 2026): method 0.2.0; full run queued.** The analysis code was committed before any
-data was collected. The pilot run of 0.1.0 found a parser bug (below), so no rank comparison has been
-published yet. Results from 0.2.0 will be added here without changing the method again; if it has to
-change, the reason will be written down here.
+**Status (31 October 2026): method 0.2.0; full run done 16 October 2026. Results: [RESULTS.md](RESULTS.md).**
+In five jams that do not ban AI, entries disclosing AI placed no differently from entries saying *No AI* (-1.4
+percentile points, 95% interval -7.7 to +5.0). Entries that left the question unanswered placed about 17
+points lower than *No AI* entries (95% interval 8.7 to 26.4), and that gap stays between 13.3 and 20.2 points
+when any one jam is left out. The analysis code was committed before any data was collected and was not
+changed after seeing it.
 
 ## The question
 
@@ -32,14 +34,15 @@ place **inside its own jam**, and does that differ by disclosure class?
 
 The jams and their rules are from [game-jam-ai-rules](https://github.com/munimtechnologies/game-jam-ai-rules),
 MV2's quote-backed dataset of jam AI rules. Prior work on what makes itch.io jam games rank well (Vu and
-Bezemer, FDG 2020, 3,752 games) predates generative AI disclosure; we found no study that relates a
-game's own AI disclosure to its jam rank.
+Bezemer, FDG 2020, 3,752 games) predates generative AI disclosure, and studies of AI disclosure on Steam
+(Bazzaz and Cooper, arXiv 2608.11539, 2026; Game Oracle, 2026) look at commercial releases; we found no study
+that relates a game's own AI disclosure to its jam rank.
 
 ## Method
 
 `study.py` reads **every** results page of each jam (`/jam/<slug>/results?page=N`), so each entry's place
 is measured against the whole jam. It then reads the game pages of an **evenly spaced sample** of each
-jam's ranking (100 per jam in the queued run: the first, the last and evenly between), taking one page
+jam's ranking (100 per jam in the full run: the first, the last and evenly between), taking one page
 from each jam in turn. All requests go one at a time, at least a second apart, with a User-Agent that
 names Munim, Inc. It records the entry's rank, number of ratings, score, raw overall score, every
 criterion's raw score, and the sampled page's disclosure class, AI parts, engine and whether it plays in
@@ -54,7 +57,15 @@ the browser.
 - Comparisons: `yes` vs (`no` + `unanswered`), `yes` vs `no`, `no` vs `unanswered`, and per criterion
   (AI graphics on Graphics, AI sound on Audio), separately for jams that ban AI and jams that don't.
 - A jam whose results pages could not all be read is left out entirely, since places inside a partial
-  ranking would be wrong.
+  ranking would be wrong. In the full run every results page of all seven jams was read.
+
+## Checks after the run
+
+- `verify_sampled.py` shares no code with `study.py`. It re-reads the 625 sampled rows, re-derives every
+  jam-level count and mean and the three pooled differences, and splits each difference by jam and with each
+  jam left out. On the full run it found no mismatch (`data/verify-2026-10-16.json`).
+- `check_results.py` re-derives the same figures from the study's row file and writes the redacted copy
+  described under Privacy.
 
 ## Changes to the method, and why
 
@@ -69,23 +80,8 @@ the browser.
   score as *n/a*, so there is no score to place an entry by.
 - The rate limiter now speeds back up (never below one second) after 20 answers in a row; in the pilot
   it stayed at its slowest after the first few 429 answers.
-
-## Pilot (0.1.0, 15 October 2026): top 20 of each jam only
-
-The pilot's one usable number is descriptive: how many of each jam's **top 20** game pages disclose AI.
-
-| jam | AI rule | top-20 pages read | `yes` | `no` | `unanswered` |
-|---|---|---|---|---|---|
-| Gamedev.js Jam 2026 | allowed | 20 | 9 | 11 | 0 |
-| Gamedev.js Jam 2025 | not stated | 20 | 7 | 13 | 0 |
-| Game Off 2025 | not stated | 20 | 4 | 14 | 2 |
-| GDevelop BIG Game Jam #9 | not stated | 19 | 2 | 17 | 0 |
-| AI Browser Game Jam | required | 20 | 19 | 0 | 1 |
-| SCREAM JAM 2025 | most AI banned | 20 | 1 | 15 | 4 |
-| Brackeys Game Jam 2025.2 | all AI banned | 20 | 0 | 18 | 2 |
-
-Read on 15 October 2026; disclosure is as the page shows it today. These are the very best-placed
-entries, not the jams as a whole, and 20 is small; the full run answers the question.
+- **Full run (16 October 2026):** run with `--iters 2000` (2,000 shuffles, 1,000 resamples) to fit the
+  time limit. No other change.
 
 ## Limits, stated up front
 
@@ -101,20 +97,27 @@ entries, not the jams as a whole, and 20 is small; the full run answers the ques
 
 ## Privacy
 
-`entries_public.csv` has no titles, names, usernames, page addresses or submission ids, so no entry or
-creator can be singled out. A private copy with itch's submission ids stays on MV2's machine for
-re-checking only.
+The study's raw `entries_public.csv` has no titles, names, usernames, page addresses or submission ids,
+but a jam plus a rank still points to one entry on the public results page. So it is **not** published
+as it is, and no row-level file is published yet. `check_results.py` makes `entries_public_redacted.csv`:
+rows from jams that allow AI are kept (rank, score and disclosure are all public on itch.io already), while in
+the two jams that ban AI ranks, ratings, scores and engines are removed, places are rounded to one decimal and
+the rows are re-sorted, so no entry that discloses AI where AI is banned can be found from the data. A private
+copy with itch's submission ids stays on MV2's machine for re-checking only.
 
 ## Run
 
 ```
-python -m unittest -v test_study.py
-python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 290 --games-per-jam 100
+python -m unittest -v test_study.py test_check_results.py test_verify_sampled.py
+python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 290 --games-per-jam 100 --iters 2000
+python check_results.py --run-dir out --out check
+python verify_sampled.py --parts <folder of sampled rows> --run <folder with summary.json and ranked_counts.json> --out check
 ```
 
-The tests run the parsers on sample pages (including itch's real pager), the percentiles, the even
+`test_study.py` runs the parsers on sample pages (including itch's real pager), the percentiles, the even
 sample, the permutation test, a full collect, analyse and write cycle against a fake site, turn-taking
-between jams, leaving out a jam with unread results pages, and check the public file carries no
-addresses or ids.
+between jams, leaving out a jam with unread results pages, and checks the public file carries no
+addresses or ids. `test_check_results.py` checks the independent re-derivation against values worked out
+by hand and the redaction; `test_verify_sampled.py` checks the per-jam and leave-one-jam-out splits by hand.
 
 Made by MV2 of Munim, Inc. with AI agents (Anthropic Claude). Apache-2.0.
