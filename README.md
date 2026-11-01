@@ -3,20 +3,23 @@
 Do game-jam entries that disclose generative AI rank differently from those that don't? An open study of
 itch.io jam results, by MV2 of Munim, Inc., made with AI agents. Code Apache-2.0; data CC BY 4.0.
 
-**Status (31 October 2026): method 0.2.0; full run done 16 October 2026. Results: [RESULTS.md](RESULTS.md).**
+**Status (1 November 2026): method 0.2.0; full run done 16 October 2026. Results: [RESULTS.md](RESULTS.md).**
 In five jams that do not ban AI, entries disclosing AI placed no differently from entries saying *No AI* (-1.4
 percentile points, 95% interval -7.7 to +5.0). Entries that left the question unanswered placed about 17
 points lower than *No AI* entries (95% interval 8.7 to 26.4), and that gap stays between 13.3 and 20.2 points
 when any one jam is left out. The analysis code was committed before any data was collected and was not
 changed after seeing it.
 
-**Next (pre-registered 31 October 2026): [PREREGISTRATION-game-off-2026.md](PREREGISTRATION-game-off-2026.md).**
+**New (1 November 2026): Game Off 2025 footprint baseline, [RESULTS-footprints-go25.md](RESULTS-footprints-go25.md).**
 GitHub Game Off asks every entry for a public repository, so its games carry two records of AI use: the
 itch.io disclosure and the files and commit lines AI coding agents leave in a repository (`CLAUDE.md`,
-`AGENTS.md`, `.cursorrules`, Copilot instructions, `Co-authored-by` lines). `footprints.py` reads every
-ranked Game Off entry, its game page and its repository as it stood at the deadline (history and file names
-only, no file contents), and counts both. Game Off 2025 is the baseline; Game Off 2026 is read after its
-results in January 2027. Only counts are published; no entry or repository is named.
+`AGENTS.md`, `.cursorrules`, Copilot instructions, `Co-authored-by` lines). At the 2025 deadline, 17 of 533
+readable repositories (3.2%) held such a footprint; 11 of those 17 game pages disclose AI and 6 do not.
+Pages that disclose AI carry a footprint about six times as often as the rest (9.0% against 1.5%). Only 533
+of 690 ranked entries (77%) still have a readable repository a year on. Of the three pre-registered baseline
+predictions, B1 and B2 held and B3 (at least 80% readable) failed. Game Off 2026 is read after its results in
+January 2027 under the same [pre-registration](PREREGISTRATION-game-off-2026.md). Only counts are published;
+no entry or repository is named.
 
 ## The question
 
@@ -74,6 +77,9 @@ the browser.
   jam left out. On the full run it found no mismatch (`data/verify-2026-10-16.json`).
 - `check_results.py` re-derives the same figures from the study's row file and writes the redacted copy
   described under Privacy.
+- `test_footprints_go25_results.py` checks that the Game Off 2025 footprint counts add up, that every share
+  and Wilson interval matches its counts, that the grades follow the pre-registered rules, that small cells
+  are hidden, and that the results text quotes the same numbers.
 
 ## Changes to the method, and why
 
@@ -114,12 +120,13 @@ the rows are re-sorted, so no entry that discloses AI where AI is banned can be 
 copy with itch's submission ids stays on MV2's machine for re-checking only.
 
 `footprints.py` writes only counts to `summary.json`. Its row file names repositories and stays on MV2's
-machine; it is never published.
+machine; it is never published. The published `data/footprints-go25-summary.json` shows counts from 1 to 4
+as "fewer than 5".
 
 ## Run
 
 ```
-python -m unittest -v test_study.py test_check_results.py test_verify_sampled.py test_footprints.py
+python -m unittest -v test_study.py test_check_results.py test_verify_sampled.py test_footprints.py test_footprints_go25_results.py
 python study.py --jams jams.csv --out out --delay 1.0 --deadline-minutes 290 --games-per-jam 100 --iters 2000
 python check_results.py --run-dir out --out check
 python verify_sampled.py --parts <folder of sampled rows> --run <folder with summary.json and ranked_counts.json> --out check

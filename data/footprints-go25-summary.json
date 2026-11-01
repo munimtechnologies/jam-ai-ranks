@@ -1,0 +1,116 @@
+{
+ "study": "AI-agent footprints and AI disclosure, GitHub Game Off 2025 baseline",
+ "by": "MV2 of Munim, Inc., made with AI agents (Anthropic Claude)",
+ "license": "CC BY 4.0",
+ "method": "footprints.py 0.1.0 with study.py 0.2.0 (unchanged since the pre-registration)",
+ "preregistration": {
+  "file": "PREREGISTRATION-game-off-2026.md",
+  "sha256": "094fe25d1dfd82e45df17308956f28e744d7522a563364723b07d2f79010b555",
+  "seen_public_utc": "2026-11-01T06:38:26Z"
+ },
+ "jam": "game-off-2025",
+ "cutoff": "2025-12-01T21:37:00Z",
+ "read_at_utc": "2026-11-01T07:17Z",
+ "small_cells": "Counts from 1 to 4 are shown as \"fewer than 5\"; no entry, game, repository or person is named.",
+ "results_pages": 35,
+ "results_pages_read": 35,
+ "ranked": 690,
+ "game_pages_read": 668,
+ "repo_link_found": 621,
+ "no_repo_link": 69,
+ "repo_status": {
+  "ok": 533,
+  "clone_failed": 72,
+  "late": 9,
+  "empty": 7
+ },
+ "analysable": {
+  "k": 533,
+  "n": 690,
+  "share": 0.7725,
+  "wilson95": [0.7397, 0.8022]
+ },
+ "disclosure_counts_read_pages": {
+  "yes": 158,
+  "no": 425,
+  "unanswered": 84,
+  "both": 1
+ },
+ "discloses_ai": {
+  "k": 159,
+  "n": 668,
+  "share": 0.238,
+  "wilson95": [0.2073, 0.2718]
+ },
+ "footprint": {
+  "k": 17,
+  "n": 533,
+  "share": 0.0319,
+  "wilson95": [0.02, 0.0505]
+ },
+ "footprint_root": {
+  "k": 14,
+  "n": 533,
+  "share": 0.0263,
+  "wilson95": [0.0157, 0.0436]
+ },
+ "footprint_at_head_today": {
+  "k": 19,
+  "n": 542,
+  "share": 0.0351,
+  "wilson95": [0.0226, 0.0541]
+ },
+ "footprint_by_kind": {
+  "files_in_repository": 15,
+  "commit_lines_only": "fewer than 5",
+  "vendored_folders_only_not_counted": "fewer than 5"
+ },
+ "families": {
+  "agents_md": 8,
+  "claude": 7,
+  "copilot": "fewer than 5",
+  "cursor": "fewer than 5",
+  "kiro": "fewer than 5"
+ },
+ "crosstab_analysable": {
+  "yes": {"footprint": 11, "none": 111},
+  "no": {"footprint": "fewer than 5", "none": 335},
+  "unanswered": {"footprint": "fewer than 5", "none": 63},
+  "other_or_page_not_read": {"footprint": 0, "none": 7}
+ },
+ "footprint_among_disclosing": {
+  "k": 11,
+  "n": 122,
+  "share": 0.0902,
+  "wilson95": [0.0511, 0.1543]
+ },
+ "footprint_among_rest": {
+  "k": 6,
+  "n": 411,
+  "share": 0.0146,
+  "wilson95": [0.0067, 0.0315]
+ },
+ "footprint_not_disclosing": {
+  "k": 6,
+  "n": 17,
+  "share": 0.3529,
+  "wilson95": [0.1731, 0.587]
+ },
+ "places_pct_raw": {
+  "yes_vs_no": {"n_a": 158, "n_b": 425, "diff": -0.0331, "p": 0.2314, "ci95": [-0.0859, 0.0232]},
+  "no_vs_unanswered": {"n_a": 425, "n_b": 84, "diff": 0.0876, "p": 0.012, "ci95": [0.0157, 0.1598]},
+  "yes_vs_rest": {"n_a": 158, "n_b": 509, "diff": -0.0186, "p": 0.4933, "ci95": [-0.0687, 0.0276]},
+  "footprint_vs_none": {"n_a": 17, "n_b": 516, "diff": 0.0375, "p": 0.6112, "ci95": [-0.0712, 0.1476]}
+ },
+ "places_pct_rank": {
+  "yes_vs_no": {"n_a": 158, "n_b": 425, "diff": -0.0191, "p": 0.4743, "ci95": [-0.0707, 0.0298]},
+  "no_vs_unanswered": {"n_a": 425, "n_b": 84, "diff": 0.0733, "p": 0.035, "ci95": [0.0042, 0.1453]},
+  "yes_vs_rest": {"n_a": 158, "n_b": 509, "diff": -0.007, "p": 0.7866, "ci95": [-0.0594, 0.0394]},
+  "footprint_vs_none": {"n_a": 17, "n_b": 516, "diff": 0.0253, "p": 0.7236, "ci95": [-0.0793, 0.1358]}
+ },
+ "grades": {
+  "B1": "held",
+  "B2": "held",
+  "B3": "failed"
+ }
+}
